@@ -1,1 +1,58 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: basic-template
+  title: Template Básico
+  description: Template super simples para teste
+spec:
+  owner: user:guest
+  type: service
+  
+  parameters:
+    - title: Informações Básicas
+      required:
+        - name
+      properties:
+        name:
+          title: Nome do Projeto
+          type: string
+          description: Digite o nome do seu projeto
+        
+        description:
+          title: Descrição
+          type: string
+          description: O que faz seu projeto?
 
+    - title: Repositório
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: URL do Repositório
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: fetch-template
+      name: Buscar Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+
+    - id: publish
+      name: Publicar no GitHub
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        description: ${{ parameters.description || 'Projeto criado pelo Backstage' }}
+
+  output:
+    links:
+      - title: Ver Repositório
+        url: ${{ steps.publish.output.remoteUrl }}
