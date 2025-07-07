@@ -5,7 +5,7 @@ metadata:
   title: Template Básico
   description: Template super simples para teste
 spec:
-  owner: user:guest
+  owner: bonettdreans
   type: service
   
   parameters:
