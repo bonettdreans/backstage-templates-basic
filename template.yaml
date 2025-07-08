@@ -3,56 +3,38 @@ kind: Template
 metadata:
   name: basic-template
   title: Template Básico
-  description: Template super simples para teste
+  description: Um template básico para projetos
 spec:
-  owner: bonettdreans
+  owner: user:bonett
   type: service
-  
   parameters:
-    - title: Informações Básicas
+    - title: Informações do Projeto
       required:
         - name
       properties:
         name:
           title: Nome do Projeto
           type: string
-          description: Digite o nome do seu projeto
-        
-        description:
-          title: Descrição
-          type: string
-          description: O que faz seu projeto?
-
-    - title: Repositório
-      required:
-        - repoUrl
-      properties:
-        repoUrl:
-          title: URL do Repositório
-          type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
-
+          description: Nome único do projeto
   steps:
-    - id: fetch-template
+    - id: fetch-base
       name: Buscar Template
       action: fetch:template
       input:
         url: ./skeleton
         values:
           name: ${{ parameters.name }}
-          description: ${{ parameters.description }}
-
+    
     - id: publish
       name: Publicar no GitHub
       action: publish:github
       input:
-        repoUrl: ${{ parameters.repoUrl }}
-        description: ${{ parameters.description || 'Projeto criado pelo Backstage' }}
-
-  output:
-    links:
-      - title: Ver Repositório
-        url: ${{ steps.publish.output.remoteUrl }}
+        allowedHosts: ['github.com']
+        repoUrl: github.com?owner=bonettdreans&repo=${{ parameters.name }}
+        
+    - id: register
+      name: Registrar no Catálogo
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
