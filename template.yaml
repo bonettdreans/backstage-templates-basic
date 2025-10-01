@@ -29,7 +29,6 @@ spec:
       name: Publicar no GitHub
       action: publish:github
       input:
-        allowedHosts: ['github.com']
         repoUrl: github.com?owner=bonettdreans&repo=${{ parameters.name }}
         
     - id: register
