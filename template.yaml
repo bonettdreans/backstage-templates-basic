@@ -5,17 +5,50 @@ metadata:
   title: Template Básico
   description: Um template básico para projetos
 spec:
-  owner: user:bonett
+  owner: user:default/bonettdreans
   type: service
+  
   parameters:
     - title: Informações do Projeto
       required:
         - name
+        - owner
       properties:
         name:
           title: Nome do Projeto
           type: string
           description: Nome único do projeto
+          ui:autofocus: true
+          ui:options:
+            rows: 5
+        description:
+          title: Descrição
+          type: string
+          description: Descrição do projeto
+        owner:
+          title: Owner
+          type: string
+          description: Proprietário do componente
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+              - User
+    
+    - title: Escolha o repositório
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - bonettdreans
+
   steps:
     - id: fetch-base
       name: Buscar Template
@@ -24,16 +57,29 @@ spec:
         url: ./skeleton
         values:
           name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
     
     - id: publish
       name: Publicar no GitHub
       action: publish:github
       input:
-        repoUrl: github.com?owner=bonettdreans&repo=${{ parameters.name }}
+        allowAutoMerge: true
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
         
     - id: register
       name: Registrar no Catálogo
       action: catalog:register
       input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
